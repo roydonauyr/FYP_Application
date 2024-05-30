@@ -1,7 +1,7 @@
 {
-  "name": "mutecompanion",
+  "name": "muteapp",
   "version": "1.0.0",
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,14 +9,17 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-vector-icons/ionicons": "^7.3.1-alpha.9",
+    "@react-navigation/bottom-tabs": "^6.5.20",
+    "@react-navigation/native": "^6.1.17",
+    "@react-navigation/native-stack": "^6.9.26",
     "axios": "^1.3.4",
-    "expo": "~50.0.6",
-    "expo-status-bar": "~1.11.1",
+    "expo": "~51.0.8",
+    "expo-status-bar": "~1.12.1",
     "nativewind": "^2.0.11",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "18.2.0",
     "react-media-recorder": "^1.6.6",
-    "react-native": "0.73.4"
+    "react-native": "0.74.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -25,7 +28,7 @@
     "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.21",
-    "tailwindcss": "3.3.2",
+    "tailwindcss": "^3.3.2",
     "typescript": "^4.9.3",
     "vite": "^4.1.0"
   },
