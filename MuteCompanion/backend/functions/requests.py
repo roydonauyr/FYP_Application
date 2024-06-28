@@ -60,8 +60,8 @@ def get_response_choice(message):
             model="gpt-3.5-turbo",
             messages = messages 
         )
-        print(raw_response)
-
+        #print(raw_response)
+    
         # Split response choices for user to pick
         response_choices = raw_response.choices[0].message.content
         return response_choices, user_message["content"]

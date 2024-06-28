@@ -1,6 +1,10 @@
 import json
 import random
 
+#The 3 responses must be seperated by an @, for example: "Response 1 generated@Response 2generated@Response 3 generated" all in one line and 
+# Start by generating 3 responses to what the other person says.
+        # After generating the 3 responses, you will then receive the following for all subsequent conversations
+        # Roydon says: ... Other person says ... After which generate the 3 responses.
 # Get recent messages
 def get_previous_responses():
 
@@ -17,11 +21,9 @@ def get_previous_responses():
         In the case the responses are not chosen, the mute person could type their own response. Do take note of this response and continue the conversation from the response selected or typed out by the mute person.
         Ensure the responses generated will allow the conversation to flow smoothly.
 
-        Start by generating 3 responses to what the other person says.
-        After generating the 3 responses, you will then receive the following for all subsequent conversations
-        Roydon says: ... Other person says ... After which generate the 3 responses.
+        It must be in english. 
 
-        The 3 responses must be seperated by an @, for example: "Response 1@Response 2@Response 3" all in one line and it must be in english. 
+        An example of the 3 generated response would be in the format of 1 single string "Response 1: what you generated Response 2: what you generated Response 3: what you generated" all in one line.
         """,
     }
 
@@ -47,7 +49,7 @@ def get_previous_responses():
                     for message in data:
                         messages.append(message)
                 else:
-                    for message in data[-5]:
+                    for message in data[-5:]:
                         messages.append(message)
     except Exception as e:
         print(e)

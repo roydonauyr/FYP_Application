@@ -1,7 +1,8 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GlobalStyles } from "./constants/styles";
+import { useEffect } from "react";
 
 // Navigation
 import { NavigationContainer } from "@react-navigation/native";
@@ -22,6 +23,20 @@ const BottomTabs = createBottomTabNavigator();
 import IconButton from "./components/UI/IconButton";
 import EntypoButton from "./components/UI/EntypoButton";
 import SearchBar from "./components/UI/SearchBar";
+import ChatContextProvider from "./components/Chats/chat-context";
+
+import { Audio } from "expo-av";
+
+async function getMicrophonePermissions() {
+  const { status } = await Audio.requestPermissionsAsync();
+  if (status === "granted") {
+    console.log("Microphone permissions granted.");
+    // You can now proceed to record audio
+  } else {
+    console.log("Microphone permissions denied.");
+    // Handle the denied case appropriately
+  }
+}
 
 function MainOverview() {
   return (
@@ -54,7 +69,7 @@ function MainOverview() {
           title: "All Chat",
           tabBarLabel: "All Chat",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="hourglass" size={size} color={color} />
+            <EntypoButton icon="chat" size={size} color={color} />
           ),
         }}
       />
@@ -76,7 +91,7 @@ function MainOverview() {
           title: "Profile",
           tabBarLabel: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+            <Ionicons name="settings" size={size} color={color} />
           ),
         }}
       />
@@ -85,31 +100,44 @@ function MainOverview() {
 }
 
 export default function App() {
+  useEffect(() => {
+    getMicrophonePermissions();
+  }, []);
+
   return (
     <>
       <StatusBar style="light" />
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerStyle: { backgroundColor: GlobalStyles.colors.primary50 },
-            headerTintColor: "white",
-          }}
-        >
-          <Stack.Screen
-            name="MainOverview"
-            component={MainOverview}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="AllChat"
-            component={AllChat}
-            options={{
-              presentation: "modal",
-              headerTitle: () => <SearchBar />,
+      <ChatContextProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{
+              headerStyle: { backgroundColor: GlobalStyles.colors.primary100 },
+              headerTintColor: "white",
             }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+          >
+            <Stack.Screen
+              name="MainOverview"
+              component={MainOverview}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={Chat}
+              options={({ navigation }) => ({
+                title: "New Chat",
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ marginLeft: 10 }}
+                  >
+                    <Ionicons name="arrow-back" size={24} color="white" />
+                  </TouchableOpacity>
+                ),
+              })}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ChatContextProvider>
     </>
   );
 }
