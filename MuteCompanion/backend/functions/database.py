@@ -1,45 +1,61 @@
 import json
 import random
 
+
 #The 3 responses must be seperated by an @, for example: "Response 1 generated@Response 2generated@Response 3 generated" all in one line and 
 # Start by generating 3 responses to what the other person says.
         # After generating the 3 responses, you will then receive the following for all subsequent conversations
         # Roydon says: ... Other person says ... After which generate the 3 responses.
 # Get recent messages
-def get_previous_responses():
+def get_previous_responses(loaded_faiss_vs, query, search):
 
     json_file = "data.json"
     
-    # Learning instructions
-    instruction = {
-        "role": "system",
-        "content": """You are an assistant whom will faciliate the conversation between a mute and a normal person. The mute persons name is Roydon and the normal person is indicated as other person.
-        You should be generating 3 responses which the mute person could choose from and the responses generated should follow the context of the conversation. 
-        The topic should be interpreted from the conversation.
-        If no topic could be interpreted, provide default responses that a person would start with such as greetings. 
-        The responses should be what a person would say and should not include actions in a third person view. Your persona would be from the perspective of the mute person.
-        In the case the responses are not chosen, the mute person could type their own response. Do take note of this response and continue the conversation from the response selected or typed out by the mute person.
-        Ensure the responses generated will allow the conversation to flow smoothly.
-
-        It must be in english. 
-
-        An example of the 3 generated response would be in the format of 1 single string "Response 1: what you generated Response 2: what you generated Response 3: what you generated" all in one line.
-        """,
-    }
-
     # Initialize messages
     messages = []
 
-    # Add personality to the chatbot
-    rand_num = random.uniform(0,1)
+    if(search):
+        
+        context = loaded_faiss_vs.similarity_search(query, k=3)
+        contexts = ""
 
-    if (rand_num < 0.3):
-        instruction["content"] = instruction["content"] + "Out of the 3 responses, include some dry humour in at least 1."
+        for con in context:
+            contexts += con.page_content
 
-    # Add learn instruction to message array
-    messages.append(instruction)
 
-    # Get last 5 messages
+        content = f"""You are an assistant whom will faciliate the conversation between a mute and a normal person. The mute persons name is Roydon and the normal person is indicated as other person.
+                        You should be generating 3 responses which the mute person could choose from and the responses generated should follow the context of the conversation. 
+                        The responses should be what a person would say and should not include actions in a third person view. Your persona would be from the perspective of the mute person.
+
+                        Snippets of conversation would be given below in the section of Context. Use the conversations to assist in the generation the 3 responses. Primarily the topic should be inferred from the question asked but if no topic can be inferred, infer the topics from the conversations given in the context. The conversations are seperated by "{{" and "}}":\n
+                        Context: {contexts}
+
+                        For example, if the context above contains "{{"Roydon": "Recently my new pet dog has been so fun!", "Jacob": "That\'s awesome! What breed is it?"}}"
+
+                        If the user asks "What have you been up to?"
+
+                        An example of the 3 generated response would be in the format of 1 single string "Response 1: I have been playing with my new pet dog. Response 2: Nothing much, I recently brought my new pet dog to a park. Response 3: Its been tiring lately after getting a new pet dog.
+                                """
+                            
+        print("This is the context: " + content)
+
+        # Learning instructions
+        instruction = {
+            "role": "system",
+            "content": content,
+        }
+
+
+        # # Add personality to the chatbot
+        # rand_num = random.uniform(0,1)
+
+        # if (rand_num < 0.3):
+        #     instruction["content"] = instruction["content"] + "Out of the 3 responses, include some dry humour in at least 1."
+
+        # Add learn instruction to message array
+        messages.append(instruction)
+
+    #Get last 5 messages
     try:
         with open(json_file) as user_messages:
             data = json.load(user_messages)
@@ -63,9 +79,10 @@ def get_previous_responses():
 def store_messages(user_message, gpt_response):
 
     json_file = "data.json"
+    embeddings = ''
 
     # Get recent messages and exclude first response:
-    messages = get_previous_responses()[1:]
+    messages = get_previous_responses(embeddings, user_message, search=False)
 
     # Store user response:
     user_response = {

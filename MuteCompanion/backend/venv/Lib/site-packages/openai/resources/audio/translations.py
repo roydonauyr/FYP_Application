@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import Union, Mapping, cast
-from typing_extensions import Literal
 
 import httpx
 
@@ -19,9 +18,8 @@ from ..._compat import cached_property
 from ..._resource import SyncAPIResource, AsyncAPIResource
 from ..._response import to_streamed_response_wrapper, async_to_streamed_response_wrapper
 from ...types.audio import translation_create_params
-from ..._base_client import (
-    make_request_options,
-)
+from ..._base_client import make_request_options
+from ...types.audio_model import AudioModel
 from ...types.audio.translation import Translation
 
 __all__ = ["Translations", "AsyncTranslations"]
@@ -40,7 +38,7 @@ class Translations(SyncAPIResource):
         self,
         *,
         file: FileTypes,
-        model: Union[str, Literal["whisper-1"]],
+        model: Union[str, AudioModel],
         prompt: str | NotGiven = NOT_GIVEN,
         response_format: str | NotGiven = NOT_GIVEN,
         temperature: float | NotGiven = NOT_GIVEN,
@@ -93,11 +91,10 @@ class Translations(SyncAPIResource):
             }
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["file"]])
-        if files:
-            # It should be noted that the actual Content-Type header that will be
-            # sent to the server will contain a `boundary` parameter, e.g.
-            # multipart/form-data; boundary=---abc--
-            extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
+        # It should be noted that the actual Content-Type header that will be
+        # sent to the server will contain a `boundary` parameter, e.g.
+        # multipart/form-data; boundary=---abc--
+        extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
         return self._post(
             "/audio/translations",
             body=maybe_transform(body, translation_create_params.TranslationCreateParams),
@@ -122,7 +119,7 @@ class AsyncTranslations(AsyncAPIResource):
         self,
         *,
         file: FileTypes,
-        model: Union[str, Literal["whisper-1"]],
+        model: Union[str, AudioModel],
         prompt: str | NotGiven = NOT_GIVEN,
         response_format: str | NotGiven = NOT_GIVEN,
         temperature: float | NotGiven = NOT_GIVEN,
@@ -175,11 +172,10 @@ class AsyncTranslations(AsyncAPIResource):
             }
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["file"]])
-        if files:
-            # It should be noted that the actual Content-Type header that will be
-            # sent to the server will contain a `boundary` parameter, e.g.
-            # multipart/form-data; boundary=---abc--
-            extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
+        # It should be noted that the actual Content-Type header that will be
+        # sent to the server will contain a `boundary` parameter, e.g.
+        # multipart/form-data; boundary=---abc--
+        extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
         return await self._post(
             "/audio/translations",
             body=await async_maybe_transform(body, translation_create_params.TranslationCreateParams),

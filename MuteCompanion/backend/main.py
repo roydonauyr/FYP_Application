@@ -11,7 +11,7 @@ import openai
 import re
 
 # Custom functions import
-from functions.requests import audio_to_text, get_response_choice, add_final_response
+from functions.requests import audio_to_text, get_response_choice, add_final_response, add_to_vector_store
 from functions.database import store_messages, reset_messages
 from functions.text_to_speech import convert_text_to_speech
 
@@ -90,7 +90,7 @@ async def post_audio_response(file: UploadFile = File(...), selectedResponse: st
             return JSONResponse(status_code=400, content={"message": "Failed to decode audio"})
         
         # Get ChatGPT Response
-        user_message_and_response = get_response_choice(text)
+        user_message_and_response = get_response_choice(text, search = True)
         response_choices = user_message_and_response[0]
         print("response_choices:", response_choices)
 
@@ -116,6 +116,15 @@ async def post_audio_response(file: UploadFile = File(...), selectedResponse: st
         if(selectedResponse):
             final_response = selectedResponse
             add_final_response(final_response) # Update final response globally
+
+            print("Final response is: ", final_response)
+
+            # Store in vectore store
+            # if (final_response != "null"):
+            #     print("entered")
+               
+            #     #add_to_vector_store(user_message_and_response[1], final_response)
+               
 
         return {"message": "File processed successfully", "transcription": text, "response_choices": responses}
 
