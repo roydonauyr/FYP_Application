@@ -123,8 +123,8 @@ export default function App() {
             <Stack.Screen
               name="Chat"
               component={Chat}
-              options={({ navigation }) => ({
-                title: "New Chat",
+              options={({ route, navigation }) => ({
+                title: route.params?.chatName || "New Chat",
                 headerLeft: () => (
                   <TouchableOpacity
                     onPress={() => navigation.goBack()}

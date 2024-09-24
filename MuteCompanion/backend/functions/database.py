@@ -1,13 +1,131 @@
 import json
 import random
+import inflect
+from nltk.tokenize.punkt import PunktSentenceTokenizer
 
+
+# Get topic from the conversation
+# Initiate meta content
+meta_content = """
+You would be assisting in identifying topics from a snippet of conversation. I would supply the conversation directly. 
+Interpret the main topic of the conversation and return the main topic.
+
+Do not give multiple topics such as football/soccer. Only give one main topic.
+
+For example if the conversation is: 
+            {"Roydon": "Can't wait for the new football season to start, hoping for a great one for Arsenal!", "John": "Hey Roydon! Yeah, it's 
+            always exciting to see how your team will perform."}
+
+            football
+
+            Example 2:
+            {"Roydon": "I'm planning to go on a trip to Japan next year", "John": "That's awesome! Japan is such a beautiful country."}
+
+            travel
+
+            Example 3: If no main topic can be determined such as a greeting
+            {"Roydon": "Hey there! How are you doing?", "John": "Hey Roydon! I'm doing great, how about you?"}
+
+            general 
+"""
+
+# Filtering functions
+def singularize_and_lower(topic):
+    # Create an inflect engine for handling plurals
+    engine = inflect.engine()
+    
+    # Lowercase the topic
+    topic = topic.lower()
+    
+    # Singularize the topic (convert plurals to singular), returns false if not noun
+    topic = engine.singular_noun(topic) if engine.singular_noun(topic) else topic
+    
+    return topic
+
+def filter_list(docs_rel, topic):
+    # Filter according to the topic
+    filtered_docs = []
+    final_docs = []
+    general_topic = {}
+
+    if singularize_and_lower(topic) == "general":
+        for doc in docs_rel:
+            if singularize_and_lower(doc.metadata['topic']) not in general_topic:
+                general_topic[singularize_and_lower(doc.metadata['topic'])] = 1
+                filtered_docs.append(doc)
+            else:
+                continue
+    else:
+        for doc in docs_rel:
+            if(singularize_and_lower(doc.metadata['topic']) == singularize_and_lower(topic)):
+                filtered_docs.append(doc)
+       
+    if len(filtered_docs) > 2:
+        final_docs = filtered_docs[:3]
+        return final_docs
+    else:
+        count = 3 - len(filtered_docs)
+        final_docs = filtered_docs
+        position = 0
+        for i in range(count):
+            if(position == len(docs_rel)):
+                break
+            if(docs_rel[position] in filtered_docs):
+                i = i-1
+                position += 1
+                continue
+            else:
+                final_docs.append(docs_rel[position])# need to change so that it wont be same obtained
+                position+=1 
+        
+        return final_docs
+    
+# Process query
+def process_query(query):
+    # Initialize the Punkt tokenizer
+    tokenizer = PunktSentenceTokenizer()
+    
+    # Tokenize the text into sentences
+    sentences = tokenizer.tokenize(query)
+
+    # Check if the query is a simple one (contains only one sentence)
+    if len(sentences) == 1:
+        return sentences  # Return the single sentence wrapped in a list
+
+    # Combine into segments
+    combined = ''
+    segments = []
+
+    # Flag to check if last sentence was a question
+    last_was_question = False
+
+    # Loop through each sentence and decide whether to start a new segment
+    for sentence in sentences:
+        # If last sentence was a question and current isn't directly a question,
+        # start a new segment
+        if last_was_question and sentence.strip().endswith('?'):
+            segments.append(combined.strip())
+            combined = sentence + ' '
+            last_was_question = False
+        else:
+            combined += sentence + ' '
+
+        # Check if current sentence ends with a question mark
+        if sentence.strip().endswith('?'):
+            last_was_question = True
+
+    # Append the last segment if there's any remaining text
+    if combined:
+        segments.append(combined.strip())
+
+    return segments
 
 #The 3 responses must be seperated by an @, for example: "Response 1 generated@Response 2generated@Response 3 generated" all in one line and 
 # Start by generating 3 responses to what the other person says.
         # After generating the 3 responses, you will then receive the following for all subsequent conversations
         # Roydon says: ... Other person says ... After which generate the 3 responses.
 # Get recent messages
-def get_previous_responses(loaded_faiss_vs, query, search):
+def get_previous_responses(getTopic, ensemble_retriever, query, search, fail_safe_retriever, meta_content = meta_content):
 
     json_file = "data.json"
     
@@ -16,11 +134,27 @@ def get_previous_responses(loaded_faiss_vs, query, search):
 
     if(search):
         
-        context = loaded_faiss_vs.similarity_search(query, k=3)
-        contexts = ""
+        #context = loaded_faiss_vs.similarity_search(query, k=3)
+        # contexts = ""
 
-        for con in context:
-            contexts += con.page_content
+        # for con in context:
+        #     contexts += con.page_content
+
+        contexts = ""
+        query_split = process_query(query)
+        for i in query_split:
+            # Obtain top 3 filtered docs
+            try:
+                docs_rel=ensemble_retriever.invoke(i)
+                topic_interpreted = getTopic(meta_content, i)
+                final_docs = filter_list(docs_rel, topic_interpreted) # Still top 3
+                for context in final_docs:
+                    contexts += context.page_content
+            except Exception as e:
+                context = fail_safe_retriever.similarity_search(query, k=3)
+                for con in context:
+                    contexts += con.page_content
+            
 
 
         content = f"""You are an assistant whom will faciliate the conversation between a mute and a normal person. The mute persons name is Roydon and the normal person is indicated as other person.
@@ -80,9 +214,10 @@ def store_messages(user_message, gpt_response):
 
     json_file = "data.json"
     embeddings = ''
+    getTopic = ()
 
     # Get recent messages and exclude first response:
-    messages = get_previous_responses(embeddings, user_message, search=False)
+    messages = get_previous_responses(getTopic, embeddings, query = user_message, search=False, fail_safe_retriever='')
 
     # Store user response:
     user_response = {
