@@ -10,6 +10,7 @@ export const ChatContext = createContext({
   ...initialState,
   addMessage: (message) => {},
   chooseReply: (messageId, reply) => {},
+  clearMessages: () => {},
 });
 
 function chatReducer(state, action) {
@@ -24,6 +25,8 @@ function chatReducer(state, action) {
         ...state,
         replyChosen: [...state.replyChosen, {reply: action.payload, id: action.messageId}],
       };
+    case "CLEAR_MESSAGES":
+      return initialState;
     default:
       return state;
   }
@@ -42,10 +45,16 @@ function ChatContextProvider({ children }){
       dispatch({ type: "CHOOSE_REPLY", payload: reply, messageId: messageId});
     }
 
+    //Clear messages and return to intial state
+    function clearMessages(){
+      dispatch({ type: "CLEAR_MESSAGES"});
+    }
+
     const value = {
         ...chatState,
         addMessage: addMessage,
         chooseReply: chooseReply,
+        clearMessages: clearMessages,
     };
     
     return (

@@ -8,22 +8,69 @@ import {
 } from "react-native";
 import SearchBar from "../components/UI/SearchBar";
 
+// Data for the chat items
+import garyData from "../assets/mockdata/Sin Yee/Gary.json";
+import jacksonData from "../assets/mockdata/Sin Yee/Jackson.json";
+import maryData from "../assets/mockdata/Sin Yee/Mary.json";
+import mattData from "../assets/mockdata/Sin Yee/Matt.json";
+import nattyData from "../assets/mockdata/Sin Yee/Natty.json";
+import xavierData from "../assets/mockdata/Sin Yee/Xavier.json";
+
 const chatData = [
   {
     id: "1",
-    name: "John Boh",
+    name: "Gary Lim",
     message: "Hows your day...",
+    allMessages: garyData,
+    chatType: "historical",
     time: "9:00 pm",
     imageUrl: require("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\man1.jpg"),
   },
   {
     id: "2",
-    name: "John Boh",
+    name: "Jackson Tan",
     message: "Hows your day...",
+    allMessages: jacksonData,
+    chatType: "historical",
     time: "9:00 pm",
-    imageUrl: require("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\man1.jpg"),
+    imageUrl: require("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\man2.jpg"),
   },
-  // Add more items as needed
+  {
+    id: "3",
+    name: "Mary Tan",
+    message: "Hows your day...",
+    allMessages: maryData,
+    chatType: "historical",
+    time: "9:00 pm",
+    imageUrl: require("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\woman1.jpg"),
+  },
+  {
+    id: "4",
+    name: "Matt Boey",
+    message: "Hows your day...",
+    allMessages: mattData,
+    chatType: "historical",
+    time: "9:00 pm",
+    imageUrl: require("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\man3.jpg"),
+  },
+  {
+    id: "5",
+    name: "Natty Toh",
+    message: "Hows your day...",
+    allMessages: nattyData,
+    chatType: "historical",
+    time: "9:00 pm",
+    imageUrl: require("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\woman2.jpg"),
+  },
+  {
+    id: "6",
+    name: "Xavier Oh",
+    message: "Hows your day...",
+    allMessages: xavierData,
+    chatType: "historical",
+    time: "9:00 pm",
+    imageUrl: require("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\man4.jpg"),
+  },
 ];
 
 function AllChat({ navigation }) {
@@ -31,7 +78,12 @@ function AllChat({ navigation }) {
     <TouchableOpacity
       style={styles.chatItem}
       onPress={() =>
-        navigation.navigate("Chat", { chatId: item.id, chatName: item.name })
+        navigation.navigate("Chat", {
+          chatId: item.id,
+          chatName: item.name,
+          allMessages: item.allMessages,
+          chatType: item.chatType,
+        })
       }
     >
       <Image source={item.imageUrl} style={styles.profilePic} />

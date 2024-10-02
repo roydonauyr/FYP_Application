@@ -6,3 +6,6 @@ langchain-core
 langchain_text_splitters
 langchain_community
 faiss-cpu
+nltk
+inflect
+rank_bm25

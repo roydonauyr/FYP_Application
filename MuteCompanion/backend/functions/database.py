@@ -1,8 +1,9 @@
 import json
-import random
-import inflect
+import os
 from nltk.tokenize.punkt import PunktSentenceTokenizer
-
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
 
 # Get topic from the conversation
 # Initiate meta content
@@ -29,17 +30,45 @@ For example if the conversation is:
             general 
 """
 
+global final_topic
+
+def is_valid_word(word):
+    """Check if a word is valid by looking it up in WordNet."""
+    return bool(wordnet.synsets(word))
+
+def get_wordnet_pos(word):
+    """Map POS tag to first character lemmatize() accepts."""
+    tag = nltk.pos_tag([word])[0][1][0].upper()
+    tag_dict = {"J": wordnet.ADJ,
+                "N": wordnet.NOUN,
+                "V": wordnet.VERB,
+                "R": wordnet.ADV}
+
+    return tag_dict.get(tag, wordnet.NOUN)
+
+def remove_ing(topic):
+    if topic.endswith('ing'):
+        return topic[:-3]
+    return topic
+
 # Filtering functions
 def singularize_and_lower(topic):
-    # Create an inflect engine for handling plurals
-    engine = inflect.engine()
+    # Initialize the WordNet Lemmatizer
+    lemmatizer = WordNetLemmatizer()
     
     # Lowercase the topic
     topic = topic.lower()
-    
-    # Singularize the topic (convert plurals to singular), returns false if not noun
-    topic = engine.singular_noun(topic) if engine.singular_noun(topic) else topic
-    
+
+    # Lemmatize the word with correct POS tag
+    pos = get_wordnet_pos(topic)
+    topic_lemmataized = lemmatizer.lemmatize(topic, pos)
+
+    # Extra check for words like crotcheting
+    topic = remove_ing(topic_lemmataized)
+    processed_words = [is_valid_word(word) for word in topic.split()]
+    if not all(processed_words):
+        return topic_lemmataized
+        
     return topic
 
 def filter_list(docs_rel, topic):
@@ -148,6 +177,8 @@ def get_previous_responses(getTopic, ensemble_retriever, query, search, fail_saf
                 docs_rel=ensemble_retriever.invoke(i)
                 topic_interpreted = getTopic(meta_content, i)
                 final_docs = filter_list(docs_rel, topic_interpreted) # Still top 3
+                global final_topic
+                final_topic = topic_interpreted
                 for context in final_docs:
                     contexts += context.page_content
             except Exception as e:
@@ -171,7 +202,7 @@ def get_previous_responses(getTopic, ensemble_retriever, query, search, fail_saf
                         An example of the 3 generated response would be in the format of 1 single string "Response 1: I have been playing with my new pet dog. Response 2: Nothing much, I recently brought my new pet dog to a park. Response 3: Its been tiring lately after getting a new pet dog.
                                 """
                             
-        print("This is the context: " + content)
+        print("This is the context: " + contexts)
 
         # Learning instructions
         instruction = {
@@ -238,9 +269,43 @@ def store_messages(user_message, gpt_response):
     with open(json_file, "w") as f:
         json.dump(messages,f)
 
+# Store all documents into json file:
+def store_documents(json_file_path, page_content, meta_data): 
+    try:
+        # Load existing data from the JSON file
+        if os.path.exists(json_file_path):
+            with open(json_file_path, "r") as file:
+                data = json.load(file)
+        else:
+            print("Unable to store into documents file, does not exist")
+            return
+
+        meta_data["id"] = f"{meta_data['id']}"
+
+        # save the new response
+        new_response = {
+            "metadata": meta_data,
+            "page_content": f"{page_content}"
+        }
+
+        # Append new response
+        data.append(new_response)
+
+        with open(json_file_path, "w") as file:
+            json.dump(data, file, indent=4)
+        
+        print("Documents added to all documents file")
+    except Exception as e:
+       print("Error is:", e)
+       return
+
+
+# Get Topic Stored (Minimise reruns)
+def get_stored_topic():
+    return final_topic
+
 
 # Reset messages stored in json file
 def reset_messages():
-
     # Overwrite current json file with nothing
     open("data.json", "w")
