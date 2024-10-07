@@ -9,12 +9,12 @@ import {
 import SearchBar from "../components/UI/SearchBar";
 
 // Data for the chat items
-import garyData from "../assets/mockdata/Sin Yee/Gary.json";
-import jacksonData from "../assets/mockdata/Sin Yee/Jackson.json";
-import maryData from "../assets/mockdata/Sin Yee/Mary.json";
-import mattData from "../assets/mockdata/Sin Yee/Matt.json";
-import nattyData from "../assets/mockdata/Sin Yee/Natty.json";
-import xavierData from "../assets/mockdata/Sin Yee/Xavier.json";
+import garyData from "../assets/mockdata/Yu Min/Gary.json";
+import jacksonData from "../assets/mockdata/Yu Min/Jackson.json";
+import maryData from "../assets/mockdata/Yu Min/Mary.json";
+import mattData from "../assets/mockdata/Yu Min/Matt.json";
+import nattyData from "../assets/mockdata/Yu Min/Natty.json";
+import xavierData from "../assets/mockdata/Yu Min/Xavier.json";
 
 const chatData = [
   {

@@ -25,10 +25,10 @@ from langchain.retrievers import BM25Retriever, EnsembleRetriever
 openai.organisation = config("OPEN_AI_ORG")
 openai.api_key = config("OPEN_AI_KEY")
 
-# embeddings = AzureOpenAIEmbeddings(azure_endpoint=config('AZURE_OPENAI_ENDPOINT'), 
-#                                    api_key=config('AZURE_OPENAI_APIKEY'), 
-#                                    model=config('TEXT_EMBEDDING_MODEL_NAME'),
-#                                    azure_deployment=config('TEXT_EMBEDDING_DEPLOYMENT_NAME'))
+open_ai_embeddings = AzureOpenAIEmbeddings(azure_endpoint=config('AZURE_OPENAI_ENDPOINT'), 
+                                   api_key=config('AZURE_OPENAI_APIKEY'), 
+                                   model=config('TEXT_EMBEDDING_MODEL_NAME'),
+                                   azure_deployment=config('TEXT_EMBEDDING_DEPLOYMENT_NAME'))
 
 embeddings=HuggingFaceInferenceAPIEmbeddings(
     api_key=config('HUGGING_FACE_ACCESS_TOKEN'),
@@ -40,10 +40,12 @@ global loaded_faiss_vs_hf_v3
 global documents_json
 global documents
 
-json_file_path = 'C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\mockdata\\documents.json'
+# 'C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\mockdata\\documents.json'
+json_file_path = "C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Yu Min\\documents.json"
 
 # Open_ai_vector store
-loaded_faiss_vs = FAISS.load_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\faiss_vs", embeddings=embeddings, allow_dangerous_deserialization=True)
+#C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\faiss_vs
+loaded_faiss_vs = FAISS.load_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Yu Min\\faiss_vectorstore_open_ai_Yumin", embeddings=open_ai_embeddings, allow_dangerous_deserialization=True)
 
 # Initialize variables
 #start = 0
@@ -68,7 +70,8 @@ def initialize_variables(json_file_path=json_file_path):
     global ensemble_retriever
 
 
-    loaded_faiss_vs_hf_v3 = FAISS.load_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\hugging_face\\faiss_vs_hf_v3", embeddings=embeddings, allow_dangerous_deserialization=True)
+    # C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\hugging_face\\faiss_vs_hf_v3
+    loaded_faiss_vs_hf_v3 = FAISS.load_local("C:\\Roydon\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Yu Min\\faiss_vectorstore_Yumin_v2", embeddings=embeddings, allow_dangerous_deserialization=True)
     with open(json_file_path, 'r') as json_file:
         documents_json = json.load(json_file)
     
@@ -184,7 +187,7 @@ def get_response_choice(mute, normal, final_response, message, search, failsafe_
     
         # Split response choices for user to pick
         response_choices = raw_response.choices[0].message.content
-        print("User message is: ", user_message["content"])
+        #print("User message is: ", user_message["content"])
         return response_choices, user_message["content"]
     except Exception as e:
         print(e)
@@ -253,7 +256,8 @@ def add_to_vector_store(filename, mute, normal, query, response, topic, response
     ids=[vector_id]
 
     loaded_faiss_vs_hf_v3.add_documents(documents=documents, ids=ids)
-    loaded_faiss_vs_hf_v3.save_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\hugging_face\\faiss_vs_hf_v3_new") # Remember to save else when reinitialize, variables gone
+    # "C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\hugging_face\\faiss_vs_hf_v3_new"
+    loaded_faiss_vs_hf_v3.save_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Yu Min\\faiss_vectorstore_Yumin_v2") # Remember to save else when reinitialize, variables gone
     print("Vector Added successfully")
 
     # Add to documents list

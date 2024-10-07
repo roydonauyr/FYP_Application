@@ -182,6 +182,7 @@ def get_previous_responses(getTopic, ensemble_retriever, query, search, fail_saf
                 for context in final_docs:
                     contexts += context.page_content
             except Exception as e:
+                print("Entered fail safe")
                 context = fail_safe_retriever.similarity_search(query, k=3)
                 for con in context:
                     contexts += con.page_content

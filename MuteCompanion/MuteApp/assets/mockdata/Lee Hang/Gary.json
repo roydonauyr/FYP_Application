@@ -61,5 +61,77 @@
     },
     "Response 16": {
         "Gary": "It's great to see your passion for cooking shine through! Keep up the amazing work, Lee Hang."
+    },
+    "Response 17": {
+        "Gary": "Hi Li Hang, how have you been?",
+        "Lee Hang": "Not too bad, how about you, Gary?"
+    },
+    "Response 18": {
+        "Gary": "I've been doing great. What have you been up to?",
+        "Lee Hang": "I've been trying out some new recipes in the kitchen lately."
+    },
+    "Response 19": {
+        "Gary": "Wow, have you just started cooking?",
+        "Lee Hang": "Yes, I recently got into cooking and I'm enjoying the learning process."
+    },
+    "Response 20": {
+        "Gary": "Wow, what made you want to start cooking?",
+        "Lee Hang": "I've always been fascinated by different cuisines and flavors, so I wanted to learn how to create delicious dishes myself."
+    },
+    "Response 21": {
+        "Gary": "Do you have a favorite dish you enjoy creating?",
+        "Lee Hang": "I really enjoyed making a spicy Korean tofu stew, it turned out really delicious."
+    },
+    "Response 22": {
+        "Gary": "Nice besides cooking what else have you been doing?",
+        "Lee Hang": "Apart from cooking, I've been learning to play the guitar. It's challenging, but also very rewarding."
+    },
+    "Response 23": {
+        "Gary": "Nice, what do you plan to do in Vietnam?",
+        "Lee Hang": "I am excited to visit Ha Long Bay, Hoi An Ancient Town, and the bustling city of Ho Chi Minh."
+    },
+    "Response 24": {
+        "Gary": "Which part of Vietnam would you be most excited for?",
+        "Lee Hang": "Ho Chi Minh City fascinates me the most with its vibrant street food scene, historical landmarks, and bustling markets."
+    },
+    "Response 25": {
+        "Gary": "Well, enjoy your trip! Also, I recently heard you have a new pet dog?",
+        "Lee Hang": "Thank you! Bringing home my new pet dog, Max, has been such a rewarding experience. He's already part of the family."
+    },
+    "Response 26": {
+        "Gary": "Wow, where do you get mechs from?",
+        "Lee Hang": "I adopted Max from a local animal shelter. He was so friendly and playful when I first met him."
+    },
+    "Response 27": {
+        "Gary": "What do you plan to do with your PetDogMax?",
+        "Lee Hang": "I'm looking forward to exploring new places with Max, like the beach and hiking trails. I want to create lasting memories with him and strengthen our bond."
+    },
+    "Response 28": {
+        "Gary": "What does Max like to do at home?",
+        "Lee Hang": "Max loves playing with his favorite squeaky toy and lounging on his cozy bed. He also enjoys chasing after his tail and napping in sunny spots around the house."
+    },
+    "Response 29": {
+        "Gary": "Nice! By the way, are you watching any new shows right now?",
+        "Lee Hang": "Lately, I've been watching a new cooking show that has inspired me to try out some new recipes in the kitchen. It's been a fun and delicious experience."
+    },
+    "Response 30": {
+        "Gary": "Who's your favorite in Hell's Kitchen then?",
+        "Lee Hang": "Chef Ramsay's feedback and mentorship really make a difference in the contestants' progress. It's fascinating to witness their journey and culinary development throughout the show."
+    },
+    "Response 31": {
+        "Gary": "Oh yeah, I recently heard you've been trying to take part in a hackathon?",
+        "Lee Hang": "Yes, I'm excited to be participating in a hackathon for Citibank! I'm looking forward to the challenge and the opportunity to innovate in the banking sector."
+    },
+    "Response 32": {
+        "Gary": "Any plans for the hackathon so far?",
+        "Lee Hang": "I've been brainstorming concepts for the hackathon, such as designing a personal finance management app or implementing machine learning algorithms for fraud detection. I'm excited to see how these ideas unfold during the competition."
+    },
+    "Response 33": {
+        "Gary": "What would you do differently from your previous hackathon?",
+        "Lee Hang": "This time, I intend to enhance the user interface and overall user experience of the finance app, making it more intuitive and engaging for users. Moreover, I plan to implement more sophisticated machine learning algorithms for fraud detection to stay ahead of potential threats."
+    },
+    "Response 34": {
+        "Gary": "Are you teaming up with anyone for this hackathon?",
+        "Lee Hang": "Absolutely! I'm collaborating with a team of like-minded developers who are dedicated to crafting a user-friendly finance app and implementing advanced fraud detection algorithms. Our combined efforts will surely make a significant impact at the hackathon."
     }
 }

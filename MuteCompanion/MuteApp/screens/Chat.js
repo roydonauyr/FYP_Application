@@ -22,7 +22,7 @@ function Chat({ route }) {
   const [activeId, setActiveId] = useState(null); // To store the active message id
   const [recording, setRecording] = useState(); // Audio Recording
   const [normalPersonName, setnormalPersonName] = useState(null);
-  const [muteUserName, setmuteUserName] = useState("Sin Yee");
+  const [muteUserName, setmuteUserName] = useState("Yu Min");
   const [selectedResponse, setSelectedResponse] = useState(null);
 
   // Function to convert JSON data to chat messages type
@@ -210,22 +210,6 @@ function Chat({ route }) {
     setActiveId(newMessage.id); // Set the active message id
   }
 
-  function sendMessage(reply, messageId) {
-    const isAlreadyChosen = chatCtx.replyChosen.some(
-      (item) => item.id === messageId
-    );
-
-    if (isAlreadyChosen) {
-      setCurrentMessage("");
-      console.log("Response already chosen for this message");
-      return;
-    }
-
-    chatCtx.chooseReply(messageId, reply);
-    setCurrentMessage("");
-    console.log("Response list:", chatCtx.replyChosen);
-  }
-
   function chooseReply(messageId, reply, mute = muteUserName, normal= normalPersonName) {
     const isAlreadyChosen = chatCtx.replyChosen.some(
       (item) => item.id === messageId
@@ -239,8 +223,6 @@ function Chat({ route }) {
     setSelectedResponse(reply);
 
     const query = chatCtx.messages.find(msg => msg.id === messageId).text;
-    console.log("mute:", mute);
-    console.log("normal:", normal);
 
     // To fix logic of new person later, for now assume will not be null
     //console.log("Normal Person Name:", normalPersonName);
@@ -273,18 +255,22 @@ function Chat({ route }) {
     }
   }
 
-  // {chatCtx.messages.map((msg) => (
-  //   <View key={msg.id} style={styles.messageBlock}>
-  //     <Text style={[styles.messageText, styles.textBubble]}>
-  //       {msg.text}
-  //     </Text>
-  //     <ChatDisplay
-  //       messageId={msg.id}
-  //       responses={msg.responses}
-  //       onChooseReply={chooseReply}
-  //     />
-  //   </View>
-  // ))}
+  function sendMessage(reply, messageId) {
+    const isAlreadyChosen = chatCtx.replyChosen.some(
+      (item) => item.id === messageId
+    );
+
+    if (isAlreadyChosen) {
+      setCurrentMessage("");
+      console.log("Response already chosen for this message");
+      return;
+    }
+
+    chooseReply(messageId, reply);
+    setCurrentMessage("");
+    console.log("Response list:", chatCtx.replyChosen);
+  }
+
 
   return (
     <View style={styles.container}>

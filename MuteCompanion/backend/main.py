@@ -115,7 +115,7 @@ async def post_audio_response(file: UploadFile = File(...), mute: str = Form(...
         if(len(responses) > 3):
             responses = responses[:3]
 
-        #print(responses)
+        print(responses)
 
         # Guard: Ensure there was a response from chatgpt
         if not user_message_and_response:

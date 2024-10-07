@@ -1,11 +1,24 @@
-import { View, TextInput, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  KeyboardAvoidingView, 
+  Platform
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GlobalStyles } from "../../constants/styles";
 import { useState, useEffect } from "react";
 
-
-function MessageBar({ activeId, onSendMessage, onSendVoiceMessage, currentMessage, onChangeMessage, style }) {
-  
+function MessageBar({
+  activeId,
+  onSendMessage,
+  onSendVoiceMessage,
+  currentMessage,
+  onChangeMessage,
+  style,
+}) {
   const [isRecording, setIsRecording] = useState(false);
   const [iconOpacity] = useState(new Animated.Value(1));
 
@@ -27,13 +40,13 @@ function MessageBar({ activeId, onSendMessage, onSendVoiceMessage, currentMessag
           Animated.timing(iconOpacity, {
             toValue: 0.2,
             duration: 500, // fade out for 500ms
-            useNativeDriver: true
+            useNativeDriver: true,
           }),
           Animated.timing(iconOpacity, {
             toValue: 1,
             duration: 500, // fade in for 500ms
-            useNativeDriver: true
-          })
+            useNativeDriver: true,
+          }),
         ])
       );
       animation.start();
@@ -45,32 +58,39 @@ function MessageBar({ activeId, onSendMessage, onSendVoiceMessage, currentMessag
       animation && animation.stop();
     };
   }, [isRecording, iconOpacity]);
-  
+
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Send a message"
-        value={currentMessage}
-        onChangeText={onChangeMessage}
-      />
-      <TouchableOpacity onPress={() => onSendMessage(currentMessage, activeId)}>
-        <Ionicons
-          name="send"
-          size={24}
-          color={GlobalStyles.colors.primary100}
-          style={styles.iconButton}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ?  95: 0}
+    >
+      <View style={styles.container}>
+        <TextInput
+          style={styles.input}
+          placeholder="Send a message"
+          value={currentMessage}
+          onChangeText={onChangeMessage}
         />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => handleRecording()}>
-        <Ionicons
-          name={isRecording ? "stop-circle" : "mic"}
-          size={24}
-          color={isRecording ? "red" : GlobalStyles.colors.primary100}
-          style={[styles.iconButton, isRecording && styles.blinking]}
-        />
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          onPress={() => onSendMessage(currentMessage, activeId)}
+        >
+          <Ionicons
+            name="send"
+            size={24}
+            color={GlobalStyles.colors.primary100}
+            style={styles.iconButton}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleRecording()}>
+          <Ionicons
+            name={isRecording ? "stop-circle" : "mic"}
+            size={24}
+            color={isRecording ? "red" : GlobalStyles.colors.primary100}
+            style={[styles.iconButton, isRecording && styles.blinking]}
+          />
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
