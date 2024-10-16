@@ -9,18 +9,28 @@ import {
 import SearchBar from "../components/UI/SearchBar";
 
 // Data for the chat items
-import garyData from "../assets/mockdata/Yu Min/Gary.json";
-import jacksonData from "../assets/mockdata/Yu Min/Jackson.json";
-import maryData from "../assets/mockdata/Yu Min/Mary.json";
-import mattData from "../assets/mockdata/Yu Min/Matt.json";
-import nattyData from "../assets/mockdata/Yu Min/Natty.json";
-import xavierData from "../assets/mockdata/Yu Min/Xavier.json";
+import garyData from "../assets/mockdata/Jane/Gary.json";
+import jacksonData from "../assets/mockdata/Jane/Jackson.json";
+import maryData from "../assets/mockdata/Jane/Mary.json";
+import mattData from "../assets/mockdata/Jane/Matt.json";
+import nattyData from "../assets/mockdata/Jane/Natty.json";
+import xavierData from "../assets/mockdata/Jane/Xavier.json";
+
+// Display the last message snippet
+function getLastMessageSnippet(data) {
+
+  const responseKeys = Object.keys(data);
+  const lastResponseKey = responseKeys[responseKeys.length - 1]; // Get the latest response
+  const lastMessage = data[lastResponseKey]["Jane"]; // Get the message from the mute user
+  return lastMessage.length > 13 ? `${lastMessage.substring(0, 15)}...` : lastMessage; // Return the first 13 characters plus ... if longer
+}
+
 
 const chatData = [
   {
     id: "1",
     name: "Gary Lim",
-    message: "Hows your day...",
+    message: getLastMessageSnippet(garyData),
     allMessages: garyData,
     chatType: "historical",
     time: "9:00 pm",
@@ -29,7 +39,7 @@ const chatData = [
   {
     id: "2",
     name: "Jackson Tan",
-    message: "Hows your day...",
+    message: getLastMessageSnippet(jacksonData),
     allMessages: jacksonData,
     chatType: "historical",
     time: "9:00 pm",
@@ -38,7 +48,7 @@ const chatData = [
   {
     id: "3",
     name: "Mary Tan",
-    message: "Hows your day...",
+    message: getLastMessageSnippet(maryData),
     allMessages: maryData,
     chatType: "historical",
     time: "9:00 pm",
@@ -47,7 +57,7 @@ const chatData = [
   {
     id: "4",
     name: "Matt Boey",
-    message: "Hows your day...",
+    message: getLastMessageSnippet(mattData),
     allMessages: mattData,
     chatType: "historical",
     time: "9:00 pm",
@@ -56,7 +66,7 @@ const chatData = [
   {
     id: "5",
     name: "Natty Toh",
-    message: "Hows your day...",
+    message: getLastMessageSnippet(nattyData),
     allMessages: nattyData,
     chatType: "historical",
     time: "9:00 pm",
@@ -65,7 +75,7 @@ const chatData = [
   {
     id: "6",
     name: "Xavier Oh",
-    message: "Hows your day...",
+    message: getLastMessageSnippet(xavierData),
     allMessages: xavierData,
     chatType: "historical",
     time: "9:00 pm",

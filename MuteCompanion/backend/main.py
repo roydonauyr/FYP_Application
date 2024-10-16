@@ -6,15 +6,18 @@ from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from decouple import config
 import openai
 import re
+from io import BytesIO
 
 # To time functionalities
 import time
+import os
 
 # Custom functions import
-from functions.requests import audio_to_text, get_response_choice, add_final_response, add_to_vector_store, store_conversation
+from functions.requests import audio_to_text, get_response_choice, store_conversation, rank_and_regenerate
 from functions.database import store_messages, reset_messages
 from functions.text_to_speech import convert_text_to_speech
 
@@ -22,9 +25,13 @@ from functions.text_to_speech import convert_text_to_speech
 # Initiate App
 app = FastAPI()
 
+# Mount a static file route
+app.mount("/static", StaticFiles(directory="static"), name="static") # For recordings
+
 # CORS - Origins (Domains to accepts) (Add front end local host url here later)
 # 192.168.18.13
 origins = [
+    "http://172.20.10.6:8081",
     "http://192.168.18.13:8081",
     "http://localhost:8000",
 ]
@@ -121,25 +128,12 @@ async def post_audio_response(file: UploadFile = File(...), mute: str = Form(...
         if not user_message_and_response:
             return HTTPException(status_code = 400, detail = "Failed to get chatgpt response")
 
-        # Store messages
+        # Store messages into json file for history of top 5
         store_messages(user_message_and_response[1], response_choices)
 
         # Total time
         total_process_time = time.time() - start_audio_to_text
         print(f"Total process time: {total_process_time} seconds")
-
-
-        # if(selectedResponse):
-        #     final_response = selectedResponse
-        #     add_final_response(final_response) # Update final response globally
-
-        #     print("Final response is: ", final_response)
-
-            # Store in vectore store
-            # if (final_response != "null"):
-            #     print("entered")
-               
-            #     #add_to_vector_store(user_message_and_response[1], final_response)
                
 
         return {"message": "File processed successfully", "transcription": text, "response_choices": responses}
@@ -165,6 +159,20 @@ async def post_audio_response(file: UploadFile = File(...), mute: str = Form(...
     # #return StreamingResponse(iterfile(), media_type="audio/mpeg")
     # return StreamingResponse(iterfile(), media_type="application/octet-stream")
 
+# Text To Speech Response
+@app.post("/text-to-speech/")
+async def text_to_speech(response: str = Form(...)):
+    audio_output = convert_text_to_speech(response)
+    if not audio_output:
+        raise HTTPException(status_code=500, detail="Failed to convert text to speech")
+    
+    audio_file_path = "C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\static\\response.mp3"
+    with open(audio_file_path, "wb") as f:
+        f.write(audio_output)
+
+    return {"message": "Audio saved successfully"}
+
+
 # Store conversation (Response selected and normal persons prompts/query)
 @app.post("/store-response/")
 async def store_response(mute: str = Form(...), normal: str = Form(...), query: str = Form(...), response: str = Form(...)):
@@ -179,12 +187,53 @@ async def reset():
     return {"message": "Conversation has been resetted"}
 
 
+# Refresh and regenerate responses
+@app.post("/regenerate-responses/")
+async def regenerate_responses(mute: str = Form(...), normal: str = Form(...), final_response: str = Form(...), text: str = Form(...)):
 
-# Post request for audio to chatgpt
-# @app.post("/post-audio/")
-# async def post_audio(file: UploadFile = File(...)):
-#     print("Testing")
+    # Remove history to regenerate responses
+    reset_messages()
 
+    # Get ChatGPT Response
+    start_get_response_choice = time.time()
+    user_message_and_response = get_response_choice(mute, normal, final_response, text, search = True)
+    get_response_choice_time = time.time() - start_get_response_choice
+
+    response_choices = user_message_and_response[0]
+    #print("response_choices:", response_choices)
+    print(f"Regenerate response choice time: {get_response_choice_time} seconds")
+
+    responses = split_and_clean_responses(response_choices)
+
+    #responses = response_choices.split('@')
+            
+    # if(len(responses) < 3):
+    #     responses = response_choices.split('\n')
+
+    if(len(responses) > 3):
+        responses = responses[:3]
+
+    print(responses)
+
+    # Guard: Ensure there was a response from chatgpt
+    if not user_message_and_response:
+        return HTTPException(status_code = 400, detail = "Failed to get chatgpt response")
+
+    # Store messages
+    store_messages(user_message_and_response[1], response_choices)
+
+    return {"message": "Responses regenerated successfully", "transcription": text, "response_choices": responses}
+
+
+# Refresh an individual response through scoring
+@app.post("/rank-responses/")
+async def rank_responses(mute: str = Form(...), normal: str = Form(...), responses: list = Form(...), query: str = Form(...), scores: list = Form(...), badResponse: str = Form(...)):
+    newResponse = rank_and_regenerate(mute, normal, responses, query, scores, badResponse)
+
+    return {"message": "Response ranked and regenerated successfully", "new_response": newResponse}
+
+
+#--------------------------------------------- HELPER FUNCTIONS ---------------------------------------------
 
 # Helper functions:
 def split_and_clean_responses(input_string):

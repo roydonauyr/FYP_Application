@@ -3,7 +3,7 @@ import MessageBar from "../components/Chats/MessageBar";
 import ChatDisplay from "../components/Chats/ChatDisplay";
 
 //Imports for state
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from "@react-navigation/native";
 import { useContext, useState, useEffect, useRef } from "react";
 import { ChatContext } from "../components/Chats/chat-context";
 
@@ -13,17 +13,21 @@ import { Audio } from "expo-av";
 //Axios
 import axios from "axios";
 
+// Declare ip
+import { config } from "../components/Config/config";
+
 function Chat({ route }) {
   const scrollViewRef = useRef(null); // For starting at the very end of messages
-  const navigation = useNavigation(); 
+  const navigation = useNavigation();
   const chatCtx = useContext(ChatContext);
   const [historicalChatMessages, setHistoricalChatMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState(""); // To store the users input of message if there is
   const [activeId, setActiveId] = useState(null); // To store the active message id
   const [recording, setRecording] = useState(); // Audio Recording
   const [normalPersonName, setnormalPersonName] = useState(null);
-  const [muteUserName, setmuteUserName] = useState("Yu Min");
+  const [muteUserName, setmuteUserName] = useState("Jane");
   const [selectedResponse, setSelectedResponse] = useState(null);
+  const [transcribedText, setTranscribedText] = useState(null);
 
   // Function to convert JSON data to chat messages type
   const convertToChatMessages = (data) => {
@@ -61,7 +65,7 @@ function Chat({ route }) {
 
   // Handles the back button press
   useEffect(() => {
-    const backHandler = navigation.addListener('beforeRemove', (e) => {
+    const backHandler = navigation.addListener("beforeRemove", (e) => {
       e.preventDefault(); // Prevent default behavior of leaving the screen
       chatCtx.clearMessages(); // Clear messages
       navigation.dispatch(e.data.action); // Proceed with the original action
@@ -94,13 +98,16 @@ function Chat({ route }) {
           <ChatDisplay
             messageId={msg.id}
             responses={msg.responses}
+            rank_and_regenerate={rank_and_regenerate}
             onChooseReply={chooseReply}
+            onRegenerateResponses={regenerate_and_store}
           />
         </View>
       );
     }
   };
 
+  //---------------------------------------------------- Generate Responses ---------------------------------------------------------
   async function startRecording() {
     try {
       console.log("Requesting permissions..");
@@ -140,7 +147,13 @@ function Chat({ route }) {
     return uri;
   }
 
-  async function uploadAudio(uri, recordingId, mute = muteUserName, normal= normalPersonName, final_response = selectedResponse) {
+  async function uploadAudio(
+    uri,
+    recordingId,
+    mute = muteUserName,
+    normal = normalPersonName,
+    final_response = selectedResponse
+  ) {
     const formData = new FormData();
     var recording_name = `recording_${recordingId}.m4a`;
     formData.append("file", {
@@ -156,9 +169,10 @@ function Chat({ route }) {
 
     //192.168.18.13
     //192.168.1.16
+    //172.20.10.6
     try {
       const response = await axios.post(
-        "http://192.168.18.13:8000/post-audio-response/", 
+        `http://${config.apiBaseUrl}:8000/post-audio-response/`,
         formData,
         {
           headers: {
@@ -181,19 +195,13 @@ function Chat({ route }) {
       return;
     }
 
-    // var selectedResponse = null;
-
-    // if (chatCtx.replyChosen.length > 0) {
-    //   selectedResponse =
-    //     chatCtx.replyChosen[chatCtx.replyChosen.length - 1].reply;
-    // }
-
     const result = await uploadAudio(
       uri,
       chatCtx.messages.length,
       selectedResponse
     );
     console.log("Transcribed text:", result.transcription);
+    setTranscribedText(result.transcription); // Store transcribe text in the event of a regeneration of responses is required
 
     const newMessage = {
       key: historicalChatMessages.length + chatCtx.messages.length + 1,
@@ -206,11 +214,167 @@ function Chat({ route }) {
     console.log("New message:", newMessage);
 
     chatCtx.addMessage(newMessage);
-    setCurrentMessage(""); // Clear message after sending\
+    setCurrentMessage(""); // Clear message after sending
     setActiveId(newMessage.id); // Set the active message id
   }
 
-  function chooseReply(messageId, reply, mute = muteUserName, normal= normalPersonName) {
+  //---------------------------------------------------- Text To Speech ---------------------------------------------------------
+  async function playAudioFromResponse() {
+    const audioUrl = `http://${config.apiBaseUrl}:8000/static/response.mp3`
+
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: audioUrl },
+        { shouldPlay: true }
+      );
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true, // needed else in silent mode would not play
+      });
+
+      await sound.playAsync();
+    } catch (error) {
+      console.error("Failed to load or play audio:", error);
+    }
+
+  }
+
+  async function textToSpeech(response) {
+    console.log("Text to Speech:", response);
+    const formData = new FormData();
+    formData.append("response", response);
+
+    try {
+      const response = await fetch(
+        `http://${config.apiBaseUrl}:8000/text-to-speech/`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      playAudioFromResponse();
+    } catch (error) {
+      console.error("Failed to fetch and play response:", error);
+    }
+  }
+
+  //----------------------------------------------------REGENERATE RESPONSES ---------------------------------------------------------
+  async function regenerateResponses(mute, normal, final_response, text) {
+    const formData = new FormData();
+    // Add form data in
+    formData.append("mute", mute);
+    formData.append("normal", normal);
+    formData.append("final_response", final_response);
+    formData.append("text", text);
+
+    //192.168.18.13
+    //192.168.1.16
+    //172.20.10.6
+    try {
+      const response = await axios.post(
+        `http://${config.apiBaseUrl}:8000/regenerate-responses/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Regeneration Successful", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error regenerating responses", error);
+      return "";
+    }
+  }
+
+  async function regenerate_and_store(
+    messageId,
+    mute = muteUserName,
+    normal = normalPersonName,
+    final_response = selectedResponse,
+    text = transcribedText
+  ) {
+    // Find corresponding message
+    const message = chatCtx.messages.find((msg) => msg.id === messageId);
+    if (!message) return;
+
+    // Obtain regenerated responses
+    const result = await regenerateResponses(
+      mute,
+      normal,
+      final_response,
+      text
+    );
+
+    const newResponses = result.response_choices;
+    console.log("New response choices:", result.response_choices);
+
+    // Update the message with new responses
+    try {
+      chatCtx.updateResponses(messageId, newResponses);
+      console.log("Responses updated successfully");
+    } catch (error) {
+      console.error("Error updating responses:", error);
+    }
+  }
+
+  // Ranking and Regenerating Responses
+  async function rank_and_regenerate(
+    scores,
+    responses,
+    badResponse,
+    mute = muteUserName,
+    normal = normalPersonName,
+    query = transcribedText
+  ) {
+    const formData = new FormData();
+
+    // Add form data in
+    formData.append("mute", mute);
+    formData.append("normal", normal);
+    formData.append("responses", responses);
+    formData.append("query", query);
+    formData.append("scores", scores);
+    formData.append("badResponse", badResponse);
+
+    console.log("Mute: ", mute);
+    console.log("normal: ", normal);
+    console.log("responses: ", responses);
+    console.log("query: ", mute);
+    console.log("scores: ", scores);
+    console.log("badResponse: ", badResponse);
+
+    //192.168.18.13
+    //192.168.1.16
+    //172.20.10.6
+    try {
+      const response = await axios.post(
+        `http://${config.apiBaseUrl}:8000/rank-responses/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Ranked and Regenerated Successfully", response.data);
+      return response.data.new_response;
+    } catch (error) {
+      console.error("Error regenerating responses", error);
+      return "";
+    }
+  }
+
+  //---------------------------------------------------- CHOOSING REPLIES ---------------------------------------------------------
+
+  function chooseReply(
+    messageId,
+    reply,
+    mute = muteUserName,
+    normal = normalPersonName
+  ) {
     const isAlreadyChosen = chatCtx.replyChosen.some(
       (item) => item.id === messageId
     );
@@ -222,31 +386,32 @@ function Chat({ route }) {
     chatCtx.chooseReply(messageId, reply);
     setSelectedResponse(reply);
 
-    const query = chatCtx.messages.find(msg => msg.id === messageId).text;
+    // Text To Speech
+    //textToSpeech(reply);
+
+    // Storing The Conversation
+    const query = chatCtx.messages.find((msg) => msg.id === messageId).text;
 
     // To fix logic of new person later, for now assume will not be null
     //console.log("Normal Person Name:", normalPersonName);
-     // API call to the backend to store the conversation
+    // API call to the backend to store the conversation
     const formData = new FormData();
-    
+
     // Add form data in
     formData.append("mute", mute);
     formData.append("normal", normal);
     formData.append("query", query);
     formData.append("response", reply);
 
-    //192.168.18.13
-    //192.168.1.16
+    // 192.168.18.13
+    // 192.168.1.16
+    // 172.20.10.6
     try {
-      axios.post(
-        "http://192.168.18.13:8000/store-response/", 
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      axios.post(`http://${config.apiBaseUrl}:8000/store-response/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       //console.log("Upload successful!");
       return;
     } catch (error) {
@@ -270,7 +435,6 @@ function Chat({ route }) {
     setCurrentMessage("");
     console.log("Response list:", chatCtx.replyChosen);
   }
-
 
   return (
     <View style={styles.container}>

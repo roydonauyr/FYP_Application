@@ -154,7 +154,7 @@ def process_query(query):
         # After generating the 3 responses, you will then receive the following for all subsequent conversations
         # Roydon says: ... Other person says ... After which generate the 3 responses.
 # Get recent messages
-def get_previous_responses(getTopic, ensemble_retriever, query, search, fail_safe_retriever, meta_content = meta_content):
+def get_previous_responses(getTopic, ensemble_retriever, query, search, fail_safe_retriever, mute, normal, meta_content = meta_content):
 
     json_file = "data.json"
     
@@ -189,7 +189,7 @@ def get_previous_responses(getTopic, ensemble_retriever, query, search, fail_saf
             
 
 
-        content = f"""You are an assistant whom will faciliate the conversation between a mute and a normal person. The mute persons name is Roydon and the normal person is indicated as other person.
+        content = f"""You are an assistant whom will faciliate the conversation between a mute and a normal person. The mute persons name is {mute} and the normal person is indicated as {normal}.
                         You should be generating 3 responses which the mute person could choose from and the responses generated should follow the context of the conversation. 
                         The responses should be what a person would say and should not include actions in a third person view. Your persona would be from the perspective of the mute person.
 
@@ -249,7 +249,7 @@ def store_messages(user_message, gpt_response):
     getTopic = ()
 
     # Get recent messages and exclude first response:
-    messages = get_previous_responses(getTopic, embeddings, query = user_message, search=False, fail_safe_retriever='')
+    messages = get_previous_responses(getTopic, embeddings, query = user_message, search=False, fail_safe_retriever='', mute = '', normal = '')
 
     # Store user response:
     user_response = {

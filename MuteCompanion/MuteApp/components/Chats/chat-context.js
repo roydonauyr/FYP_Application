@@ -11,6 +11,7 @@ export const ChatContext = createContext({
   addMessage: (message) => {},
   chooseReply: (messageId, reply) => {},
   clearMessages: () => {},
+  updateResponses: (messageId, newResponses) => {},
 });
 
 function chatReducer(state, action) {
@@ -27,6 +28,14 @@ function chatReducer(state, action) {
       };
     case "CLEAR_MESSAGES":
       return initialState;
+    case "UPDATE_RESPONSES":
+      const updatedMessages = state.messages.map(message =>
+        message.id === action.messageId ? { ...message, responses: action.payload } : message
+      );
+      return {
+        ...state,
+        messages: updatedMessages
+      };
     default:
       return state;
   }
@@ -50,11 +59,17 @@ function ChatContextProvider({ children }){
       dispatch({ type: "CLEAR_MESSAGES"});
     }
 
+    // Update responses when regenerating responses
+    function updateResponses(messageId, newResponses){
+      dispatch({ type: "UPDATE_RESPONSES", messageId, payload: newResponses});
+    }
+
     const value = {
         ...chatState,
         addMessage: addMessage,
         chooseReply: chooseReply,
         clearMessages: clearMessages,
+        updateResponses: updateResponses,
     };
     
     return (

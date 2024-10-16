@@ -41,11 +41,11 @@ global documents_json
 global documents
 
 # 'C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\mockdata\\documents.json'
-json_file_path = "C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Yu Min\\documents.json"
+json_file_path = "C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Jane\\documents.json"
 
 # Open_ai_vector store
 #C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\faiss_vs
-loaded_faiss_vs = FAISS.load_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Yu Min\\faiss_vectorstore_open_ai_Yumin", embeddings=open_ai_embeddings, allow_dangerous_deserialization=True)
+loaded_faiss_vs = FAISS.load_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Jane\\faiss_vectorstore_open_ai_Jane", embeddings=open_ai_embeddings, allow_dangerous_deserialization=True)
 
 # Initialize variables
 #start = 0
@@ -71,7 +71,7 @@ def initialize_variables(json_file_path=json_file_path):
 
 
     # C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\hugging_face\\faiss_vs_hf_v3
-    loaded_faiss_vs_hf_v3 = FAISS.load_local("C:\\Roydon\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Yu Min\\faiss_vectorstore_Yumin_v2", embeddings=embeddings, allow_dangerous_deserialization=True)
+    loaded_faiss_vs_hf_v3 = FAISS.load_local("C:\\Roydon\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Jane\\faiss_vectorstore_Jane_V2", embeddings=embeddings, allow_dangerous_deserialization=True)
     with open(json_file_path, 'r') as json_file:
         documents_json = json.load(json_file)
     
@@ -95,7 +95,7 @@ def initialize_variables(json_file_path=json_file_path):
 # Initialize variables
 initialize_variables()
 
-#--------------------------------------------- Helper Functions ---------------------------------------------
+#--------------------------------------------- Response Generation ---------------------------------------------
 
 # Convert audio to text using open ai whisper
 def audio_to_text(audio_file):
@@ -154,21 +154,9 @@ def getTopic(meta_content, query):
 def get_response_choice(mute, normal, final_response, message, search, failsafe_retriever = loaded_faiss_vs):
     global start
     #global final_response
-    messages = get_previous_responses(getTopic, ensemble_retriever, message, search, failsafe_retriever)
+    messages = get_previous_responses(getTopic, ensemble_retriever, message, search, failsafe_retriever, mute, normal)
     user_message = {}
   
-    # Editing user_message based on response user picked. At the start, user does not need to pick
-    # What you send in to chat gpt
-
-    # if start == 0:
-    #     start += 1
-    #     #print("entered once")
-    #     user_message = {
-    #         "role": "user",
-    #         "content": f"{normal} says: " + message
-    #     }
-    # else:
-    #print("Entered second time")
     user_message = {
         "role": "user",
         "content": f"{mute} says: " + final_response + f"{normal} says: " + message
@@ -200,6 +188,79 @@ def add_final_response(response_selected):
     # For now assume user picks first choice
     final_response = response_selected
     print(final_response)
+
+#--------------------------------------------- Regenerate Singular Response And Rank ---------------------------------------------
+def rank_and_regenerate(mute, normal, responses, query, scores, badResponse):
+    
+    # Instruction prompt
+    meta_content = f"""
+    You are an assistant whom will faciliate the conversation between a mute and a normal person. The mute persons name is {mute} and the normal person is indicated as {normal}.
+    You previously generated the following responses:
+    {responses}
+    For the query of: {query}
+
+    The score of the responses are as follows respectively with a max score of 1 being a good response, 0.5 being neutral and below 0.5 being a bad response:
+    {scores}
+
+    You have to generate a response that would replace the {badResponse} using the other responses (above 0.5) as a guide. Use responses with higher scores first (those with score of 1).
+    Do not repeat any of the previously generated responses.
+    The responses should be what a person would say and should not include actions in a third person view. Your persona would be from the perspective of the mute person.
+
+    For example, 
+    If the query is: "Hey Jane, what are you up to?"
+    and the responses previously generated were:
+    ["Hi Gary, I've been keeping busy with work and some new hobbies.", "Hey Gary, I've been learning how to cook new recipes and exploring different cuisines. It's been a fun and delicious experience!", "Hey Gary, I've been learning gardening, how about you?"]
+    and the scores are [0.5, 0, 1] respectively,
+    then, the good response is: "Hey Gary, I've been learning gardening, how about you"?
+    and the bad response is "Hey Gary, I've been learning how to cook new recipes and exploring different cuisines. It's been a fun and delicious experience!"
+
+    The generated response should not be about cooking and should be about gardening (using the good response as a guide to infer the topic). Do not not repeat any previous responses like "Hi Gary, I've been keeping busy with work and some new hobbies." 
+    Do not explain reasoning and just give the new response: 
+    I've been learning gardening, it's been so fun!. 
+    
+
+    Another example:
+    If the query is: "Hey Jane, what are you up to?"
+    and the responses previously generated were:
+    ["Hi Gary, I've been dancing recently.", "Hey Gary, I've been hiking recently!", "Hey Gary, I've been learning gardening, how about you?"]
+    and the scores are [0, 1, 0.5] respectively,
+    then, the good response is: "Hey Gary, I've been hiking recently!"?
+    and the bad response is "Hi Gary, I've been dancing recently."
+
+    The generated response should not be about dancing and should be about hiking (using the good response as a guide to infer the topic).
+    Do not not repeat any previous responses like "Hey Gary, I've been hiking recently!"  
+    Do not explain reasoning and just give the new response: : 
+    "I've been hiking recently and its my new hobby".
+    """
+
+    # Learning instructions
+    instruction = {
+        "role": "system",
+        "content": meta_content,
+    }
+
+    # Initialize messages
+    messages = []
+
+    # Add learn instruction to message array
+    messages.append(instruction)
+
+    user_message = {
+            "role": "user",
+            "content": query
+    }
+
+    messages.append(user_message)
+
+    raw_response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages = messages,
+    )
+    newResponse = raw_response.choices[0].message.content
+
+    return(newResponse)
+
+#--------------------------------------------- Storage ---------------------------------------------
 
 # Add conversation into respective person's json
 def store_conversation(filename, mute, normal, query, response):
@@ -257,7 +318,7 @@ def add_to_vector_store(filename, mute, normal, query, response, topic, response
 
     loaded_faiss_vs_hf_v3.add_documents(documents=documents, ids=ids)
     # "C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\hugging_face\\faiss_vs_hf_v3_new"
-    loaded_faiss_vs_hf_v3.save_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Yu Min\\faiss_vectorstore_Yumin_v2") # Remember to save else when reinitialize, variables gone
+    loaded_faiss_vs_hf_v3.save_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Jane\\faiss_vectorstore_Jane_V2") # Remember to save else when reinitialize, variables gone
     print("Vector Added successfully")
 
     # Add to documents list
@@ -278,7 +339,7 @@ def delete_from_vector_store(source):
 
     # Delete from vector store
     loaded_faiss_vs_hf_v3.delete(ids=[result_id])
-    loaded_faiss_vs_hf_v3.save_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\backend\\vector_store\\vectorstores\\hugging_face\\faiss_vs_hf_v3_new") # Remember to save else when reinitialize, variables gone
+    loaded_faiss_vs_hf_v3.save_local("C:\\Roydon\\Github\\FYP_Application\\MuteCompanion\\MuteApp\\assets\\mockdata\\Jane\\faiss_vectorstore_Jane_V2") # Remember to save else when reinitialize, variables gone
     print("Deleted successfully")
 
     # Reinitialize variables for reuse
