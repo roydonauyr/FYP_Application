@@ -169,6 +169,8 @@ def get_previous_responses(getTopic, ensemble_retriever, query, search, fail_saf
         # for con in context:
         #     contexts += con.page_content
 
+        print(f"Normal person says: {query}\n")
+
         contexts = ""
         query_split = process_query(query)
         for i in query_split:

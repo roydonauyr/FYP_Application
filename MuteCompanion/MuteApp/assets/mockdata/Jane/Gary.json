@@ -74,5 +74,21 @@
     "Response 19": {
         "Gary": "Hi Jane, how have you been?",
         "Jane": "Work has been keeping me on my toes, but I'm coping. How about you?"
+    },
+    "Response 20": {
+        "Gary": "Hi Jane, how have you been?",
+        "Jane": "It's been quite hectic, but I'm hanging in there. How about you, how have you been?"
+    },
+    "Response 21": {
+        "Gary": "Great, but what kind of gardening are you doing right now?",
+        "Jane": "Yes, I've been watching videos and reading articles to learn more about different plants and gardening techniques."
+    },
+    "Response 22": {
+        "Gary": "Hi Jane, how have you been?",
+        "Jane": "Work has been super busy, but I'm managing. What about you?"
+    },
+    "Response 23": {
+        "Gary": "Well, what are you gardening right now?",
+        "Jane": "I'm thinking of expanding my garden and starting a small vegetable patch soon."
     }
 }
