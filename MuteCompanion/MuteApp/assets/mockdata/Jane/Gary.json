@@ -66,5 +66,13 @@
     "Response 17": {
         "Gary": "That sounds great. What about any pasta dishes?",
         "Jane": "I prefer to focus on baking and have recently created my own fruit tarts."
+    },
+    "Response 18": {
+        "Gary": "Hi Jane, how have you been?",
+        "Jane": "Work has been super busy, but I'm managing. What about you?"
+    },
+    "Response 19": {
+        "Gary": "Hi Jane, how have you been?",
+        "Jane": "Work has been keeping me on my toes, but I'm coping. How about you?"
     }
 }
