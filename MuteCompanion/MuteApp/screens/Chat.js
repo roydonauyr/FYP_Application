@@ -387,7 +387,7 @@ function Chat({ route }) {
     setSelectedResponse(reply);
 
     // Text To Speech
-    //textToSpeech(reply);
+    textToSpeech(reply);
 
     // Storing The Conversation
     const query = chatCtx.messages.find((msg) => msg.id === messageId).text;

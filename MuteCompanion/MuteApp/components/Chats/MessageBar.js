@@ -4,8 +4,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
-  KeyboardAvoidingView, 
-  Platform
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { GlobalStyles } from "../../constants/styles";
@@ -62,7 +62,7 @@ function MessageBar({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ?  95: 0}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 95 : 0}
     >
       <View style={styles.container}>
         <TextInput
@@ -81,7 +81,7 @@ function MessageBar({
             style={styles.iconButton}
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleRecording()}>
+        <TouchableOpacity testID="microphone-button" onPress={() => handleRecording()}>
           <Ionicons
             name={isRecording ? "stop-circle" : "mic"}
             size={24}
