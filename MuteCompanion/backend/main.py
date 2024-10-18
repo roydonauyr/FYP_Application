@@ -101,7 +101,7 @@ async def post_audio_response(file: UploadFile = File(...), mute: str = Form(...
         if not text:
             return JSONResponse(status_code=400, content={"message": "Failed to decode audio"})
         audio_to_text_time = time.time() - start_audio_to_text
-        print(f"Audio to text time: {audio_to_text_time} seconds")
+        print(f"\nAudio to text time: {audio_to_text_time} seconds\n")
 
         # Get ChatGPT Response
         start_get_response_choice = time.time()
@@ -110,7 +110,7 @@ async def post_audio_response(file: UploadFile = File(...), mute: str = Form(...
 
         response_choices = user_message_and_response[0]
         #print("response_choices:", response_choices)
-        print(f"Get response choice time: {get_response_choice_time} seconds")
+        print(f"\nGet response choice time: {get_response_choice_time} seconds\n")
 
         responses = split_and_clean_responses(response_choices)
 
@@ -133,7 +133,7 @@ async def post_audio_response(file: UploadFile = File(...), mute: str = Form(...
 
         # Total time
         total_process_time = time.time() - start_audio_to_text
-        print(f"Total process time: {total_process_time} seconds")
+        print(f"\nTotal process time: {total_process_time} seconds\n")
                
 
         return {"message": "File processed successfully", "transcription": text, "response_choices": responses}
