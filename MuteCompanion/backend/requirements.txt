@@ -1,1 +1,11 @@
-
+requests
+python-dotenv
+langchain
+langchain_openai
+langchain-core
+langchain_text_splitters
+langchain_community
+faiss-cpu
+nltk
+inflect
+rank_bm25
