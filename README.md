@@ -6,9 +6,8 @@ Email: roydonauyrfyp1
 To create the app:
 
 **Frontend**
-Run npx create-expo-app MuteApp --template blank
-
-Run npm install for dependencies
+1. Run npx create-expo-app MuteApp --template blank
+2. Run npm install for dependencies
 
 
 **Backend**
