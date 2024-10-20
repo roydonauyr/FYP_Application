@@ -11,18 +11,16 @@ To create the app:
 
 
 **Backend**
-To create new python venv: python -m venv venv
-
-To activate venv: .\venv\Scripts\activate.ps1
+1. To create new python venv: python -m venv venv
+2. To activate venv: .\venv\Scripts\activate.ps1
 
 **To run:**
 **Note: For apis to work, the ip address in the config file under components must be changed**.
 
 **Frontend**
-npm run start
+1. npm run start
 
 **Backend commands**
 ***Running on localhost: 8000***
-
-To reload backend: uvicorn main:app --reload (Remove reload once in production)
+1. To reload backend: uvicorn main:app --reload (Remove reload once in production)
 
