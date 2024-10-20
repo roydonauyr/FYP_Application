@@ -7,20 +7,12 @@ To create the app:
 
 **Frontend**
 Run npx create-expo-app MuteApp --template blank
-Set up nativewind and ensure tailwind version is correct
 Run npm install for dependencies
+To run: npm run start
 
 **Backend**
 To create new python venv: python -m venv venv
 To activate venv: .\venv\Scripts\activate.ps1
-
-Installations:
-openai
-python-decouple
-python-multipart
-requests
-fastapi
-"uvicorn[standard]"
 
 **Backend commands**
 ***Running on localhost: 8000***
