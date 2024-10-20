@@ -7,11 +7,13 @@ To create the app:
 
 **Frontend**
 Run npx create-expo-app MuteApp --template blank
+
 Run npm install for dependencies
 
 
 **Backend**
 To create new python venv: python -m venv venv
+
 To activate venv: .\venv\Scripts\activate.ps1
 
 **To run:**
@@ -22,5 +24,6 @@ npm run start
 
 **Backend commands**
 ***Running on localhost: 8000***
+
 To reload backend: uvicorn main:app --reload (Remove reload once in production)
 
